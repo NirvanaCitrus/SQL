@@ -504,3 +504,142 @@ midx int not null -- 회원번호
 -- 외래키(foreign key 제약조건 추가)
 alter table board
 add CONSTRAINT bidx_midx_fk FOREIGN KEY(midx) REFERENCES MEMBER(midx);
+
+insert into BOARD(subject,contents,writer,recom,viewcnt,filename,ip,midx)
+values('글제목','글내용','작성자',0,0,null,'211.111.222.330',10012)
+
+select * from member;
+
+select * from board;
+
+-- 추천수 기본값 초기화
+alter table board
+modify recom int default 0;
+
+-- 조회수 기본값 초기화
+alter table board
+modify viewcnt int default 0;
+
+insert into BOARD(subject,contents,writer,recom,viewcnt,filename,ip,midx)
+values('글제목2','글내용2','작성자2',0,0,null,'211.111.222.310',10013)
+
+-- join 학습
+-- 공통된 컬럼으로 묶어서 하나의 테이블로 합치는 방법
+-- 형식:
+select * from 테이블1 inner join 테이블2 on 테이블1.pk컬럼 = 테이블2.fk컬럼
+
+select A.subject from board A inner join member B on B.midx = A.midx where B. memberid='test2';
+
+-- member 테이블 데이터 수정하기 update (DML)
+-- 형식 update 테이블이름 set 컬럼1='값', 컬럼2='값' where midx=값; (where 조건을 사용하지 않으면 전체가 업데이트 될수 있으니 주의 요망)
+-- 회원번호가 홀수인 사람들은 사는 지역을 모두 서울로 변경하세요.
+
+select 3 mod 2 from dual; -- mod 나머지 연산자
+
+update member set memberaddr='대전' where midx mod 2 =1;
+
+select * from member;
+
+-- 회원번호가 3의 배수인 사람들은 성별을 여성으로 하고 취미는 야구라고 변경하세요.
+update member set membergender='F',memberhobby='야구' where midx mod 3 =0;
+update member SET membername='이순신',memberhobby='검도' where midx mod 2=0;
+update member SET memberaddr='부산' where midx mod 4=0;
+update member SET memberaddr='대구' where midx mod 5=0;
+update member set memberbirth= '20000505'+midx;
+
+
+1. 이름을 변경해보자..memberid 하고 이름이라는 글자를 붙여서 고유하게 만들자
+2. 두글자를 붙이기 함수 concat() 사용해봐야지
+3. 확인해보자
+
+select concat('이름',memberid) from member;
+4. update 를 하자
+update member SET memberid = 'test123' where midx BETWEEN 10010 and 10020;
+5. 전체를 대상으로 할거니 where 조건은 필요없음.
+6. 확인
+select * from member;
+
+select * from board;
+
+-- board 샘플 데이터 입력하기
+insert into BOARD(subject,contents,writer,recom,viewcnt,filename,ip,midx)
+values('안녕하세요','자바 질문입니다','김마마',0,0,null,null,10015);
+insert into BOARD(subject,contents,writer,recom,viewcnt,filename,ip,midx)
+values('자바 공부중입니다','자바에 관해서 물어보고 싶어요','이순신',0,0,null,null,10016);
+insert into BOARD(subject,contents,writer,recom,viewcnt,filename,ip,midx)
+values('정처기 질문좀 할게요','정처기','손인욱',0,0,null,null,10115);
+insert into BOARD(subject,contents,writer,recom,viewcnt,filename,ip,midx)
+values('정처기 따야되나요?','정처기','김찬호',0,0,null,null,10215);
+insert into BOARD(subject,contents,writer,recom,viewcnt,filename,ip,midx)
+values('요즘 너무 힘드네요','자바 질문입니다','장지환',0,0,null,null,10315);
+insert into BOARD(subject,contents,writer,recom,viewcnt,filename,ip,midx)
+values('궁금한게 있습니다','자바 질문입니다','정상길',0,0,null,null,10415);
+insert into BOARD(subject,contents,writer,recom,viewcnt,filename,ip,midx)
+values('공휴일 계산','자바 질문입니다','김태연',0,0,null,null,10055);
+insert into BOARD(subject,contents,writer,recom,viewcnt,filename,ip,midx)
+values('휴일이 징검다리','자바 질문입니다','임윤아',0,0,null,null,10075);
+insert into BOARD(subject,contents,writer,recom,viewcnt,filename,ip,midx)
+values('가을산악','자바 질문입니다','김마마',0,0,null,null,10015);
+insert into BOARD(subject,contents,writer,recom,viewcnt,filename,ip,midx)
+values('곧 크리스마스','자바 질문입니다','김마마',0,0,null,null,10015);
+select * from board;
+
+-- 게시글을 최근 등록된 순서대로 나열하세요.
+select * from board order by bidx desc;
+
+-- 3번째 게시글을 쓴 사람의 이름을 출력하세요. (midx로 합치기)
+select B.membername from board A inner join member B on B.midx = A.midx where A.bidx=3;
+
+-- 아이디가 test123인 사람이 쓴 게시글을 모두 출력해주세요.
+select A.* from board A inner join member B on B.midx = A.midx where B.memberid='test123';
+
+-- 대전에서 사는 사람들이 쓴 글의 게시물의 수를 출력해주세요.
+select A.bidx from board A inner join member B on B.midx = A.midx where B.memberaddr='대전';
+select count(*) from board A inner join member B on B.midx = A.midx where B.memberaddr='대전';
+
+-- 8번 게시물의 조회수를 +1업데이트 해주세요.
+update board set viewcnt=viewcnt + 1 where bidx=8;
+
+-- outer join 학습하기
+	: 기준점이 되는 모든 데이터(테이블)들은 나타내주고 다른 테이블의 데이터는 공통적인 컬럼으로 묶어져 있는 데이터만 추출한다.
+
+	left outer join 형식
+
+	-- select * from 테이블A left outer join 테이블B on A.pk=B.pk
+	-- 회원들 중에 게시글을 쓴 게시물 수를 모두 출력하세요.(게시글을 쓰지 않았으면 0)
+
+
+
+SELECT   A.midx,
+         COUNT(B.bidx)
+FROM     member A
+         LEFT OUTER JOIN board B
+         ON       A.midx=B.midx
+GROUP BY A.midx
+ORDER BY midx;
+
+-- left join 학습 예제
+-- 회원들 중에 사는 지역별로 게시물을 쓴 사람들의 인원수를 출력하세요.
+
+select A.memberaddr,count(B.bidx) from member A left outer join board B on A.midx=B.midx group by A.memberaddr;
+
+
+-- 홍길동3인 사람이 쓴 글이 ip가 있으면 ip있음이라고 출력하고 아이피가 없으면 ip없음이라고 출력하세요.
+
+
+
+
+
+SELECT   A.membername,
+         CASE
+                  WHEN B.ip IS NOT NULL
+                  THEN 'ip있음'
+                  ELSE 'ip없음'
+         END AS ip_status
+FROM     member A
+         LEFT OUTER JOIN board B
+         ON       A.midx=B.bidx
+where A.membername = '홍길동3'
+GROUP BY A.membername;
+
+
