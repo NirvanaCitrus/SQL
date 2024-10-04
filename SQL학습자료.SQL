@@ -503,7 +503,7 @@ midx int not null -- 회원번호
 
 -- 외래키(foreign key 제약조건 추가)
 alter table board
-add CONSTRAINT bidx_midx_fk FOREIGN KEY(midx) REFERENCES MEMBER(midx);
+add CONSTRAINT member_board_midx_FK FOREIGN KEY(midx) REFERENCES MEMBER(midx);
 
 insert into BOARD(subject,contents,writer,recom,viewcnt,filename,ip,midx)
 values('글제목','글내용','작성자',0,0,null,'211.111.222.330',10012)
@@ -621,10 +621,12 @@ ORDER BY midx;
 -- left join 학습 예제
 -- 회원들 중에 사는 지역별로 게시물을 쓴 사람들의 인원수를 출력하세요.
 
-select A.memberaddr,count(B.bidx) from member A left outer join board B on A.midx=B.midx group by A.memberaddr;
+select A.memberaddr,count(B.bidx) from member A left outer join board B on A.midx=B.midx group by A.memberaddr,B.bidx order by memberaddr;
+-- 게시글을 등록하지 않은 사람들의 정보까지도 출력한다. inner join을 쓰면 게시글을 등록하지 않은 사람의 글은 출력하지 않는다.
 
 
 -- 홍길동3인 사람이 쓴 글이 ip가 있으면 ip있음이라고 출력하고 아이피가 없으면 ip없음이라고 출력하세요.
+select if(B.ip, 'ip있음', 'ip없음') as ip from member A inner join board B on A.midx=B.midx where membername = 'test123';
 
 
 
@@ -642,4 +644,49 @@ FROM     member A
 where A.membername = '홍길동3'
 GROUP BY A.membername;
 
+-- 제목이 '공휴일계산' 라고 쓰여진 글의 회원 이름을 출력하세요.
 
+select B.membername from board A join member B on B.midx = A.midx where A.subject = '공휴일계산';
+
+
+-- 게시글의 추천수가 제일 많은 사람의 아이디를 출력하세요.
+select B.memberid from board A left outer join member B on B.midx = A.midx where A.recom = (select max(recom) from board);
+
+1. 합쳐진 데이터를 살펴본다
+select * from member A join board B on A.midx=B.midx
+2. 어떤 조인을 써야될지 고민
+3. where 조건 사용 (서브쿼리)
+
+select A.memberid from member A join board B on A.midx=B.midx where recom = (select max(recom) from board);
+
+
+update board set recom=3 where bidx=3;
+select * from board;
+
+-- 4 검수 검증
+해당 되는 아이디가 실제로 추천수 3 아이디인지 확인해본다.
+
+
+-- reply(댓글) create 테이블 만들어보기 실습
+create table REPLY (
+ridx int not null primary key auto_increment,
+rsubject varchar(100) null,
+rcontents varchar(4000) not null,
+rwriter varchar(100) null,
+writeday datetime default now(),
+delyn char(1) default 'N',
+rip varchar(20),
+midx int not null,
+bidx int not null
+);
+
+-- midx FK 설정
+alter table REPLY
+add constraint member_reply_midx_FK foreign key(midx) references member(midx);
+
+-- bidx FK 설정
+alter table REPLY
+add constraint board_reply_bidx_FK foreign key(bidx) references board(bidx);
+
+insert into REPLY(rsubject,rcontents,rwriter,rip,midx,bidx)
+values('궁금','알려주세요','삼삼','111.222.333.444',10013,3);
