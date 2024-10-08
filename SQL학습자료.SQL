@@ -803,13 +803,13 @@ select * from reply;
 insert into reply(rsubject,rcontents,rwriter,midx,bidx)
 values('궁금','궁금한 내용','댓글작성자1',10067,3);
 insert into reply(rsubject,rcontents,rwriter,midx,bidx)
-values('알려주세요','알고싶음','댓글작성자2',10068,4);
+values('알려주세요','알고싶음','댓글작성자2',10068,9);
 insert into reply(rsubject,rcontents,rwriter,midx,bidx)
 values('댓글제목1','댓글내용1','댓글작성자3',10069,5);
 insert into reply(rsubject,rcontents,rwriter,midx,bidx)
 values('댓글제목2','댓글내용2','댓글작성자4',10070,6);
 insert into reply(rsubject,rcontents,rwriter,midx,bidx)
-values('댓글제목3','댓글내용3','댓글작성자5',10071,7);
+values('댓글제목3','댓글내용3','댓글작성자5',10071,9);
 insert into reply(rsubject,rcontents,rwriter,midx,bidx)
 values('댓글제목4','댓글내용4','댓글작성자6',10072,8);
 insert into reply(rsubject,rcontents,rwriter,midx,bidx)
@@ -860,3 +860,51 @@ where B.rsubject ='악플'
 select * from member order by midx desc;
 select * from member where memberid='' and memberpwd='1234';
 입력값을 아이디 'or 1='1 -- sql injection 쿼리공격.
+
+-- 컬럼이름 변경
+alter table member
+change column memberpw memberpwd varchar(100);
+
+-- 3개 조인 연습
+-- 회원들이 9번 게시글에 대해서 댓글을 각각 몇개씩 작성했는지 출력해주세요.
+select * from member A left join board B on A.midx=B.midx join reply C on B.bidx=C.bidx where B.bidx = 9
+
+1. 조인
+2. 데이터 확인
+3. 그룹짓기
+4. 집계함수 사용
+
+1.
+
+SELECT   A.midx,
+         COUNT(ridx)
+FROM     member A
+         LEFT JOIN
+                  (SELECT C.midx,
+                          C.ridx,
+                          B.bidx
+                  FROM    board B
+                          JOIN reply C
+                          ON      B.bidx=C.bidx
+                  WHERE   B.bidx        =9
+                  )
+                  D
+         ON       A.midx=D.midx
+GROUP BY A.midx
+
+
+2.
+
+SELECT   A.midx,
+         COUNT(B.ridx)
+FROM     member A
+         LEFT JOIN
+                  (SELECT *
+                  FROM    reply
+                  WHERE   bidx=9
+                  )
+                  B
+         ON       A.midx=B.midx
+GROUP BY A.midx
+
+-- 주의해야 될점 내가 짠 쿼리가 잘못된 정보를 표시해줄수 있기 때문에 본인이 스스로 검증이 필요.
